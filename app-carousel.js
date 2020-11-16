@@ -278,7 +278,7 @@ class AppCarousel extends AppElement {
     return [
       '__autoplayChanged(autoplay)',
       '__centeredItemChanged(_centeredItem)',
-      '__disabledChanged(disabled)',
+      '__disabledChanged(disabled, scrollContainer)',
       '__intersectingItemsChanged(_intersectingItems)',
       '__resizeIndexSectionsChanged(_resizeIndex, _sections)',
       '__sectionsChanged(_sections)'
@@ -674,7 +674,9 @@ class AppCarousel extends AppElement {
   }
 
 
-  __disabledChanged(disabled) {
+  __disabledChanged(disabled, scrollContainer) {
+    if (!scrollContainer) { return; }
+
     if (disabled) {
       this.scrollContainer.style['pointer-events'] = 'none';
     }
