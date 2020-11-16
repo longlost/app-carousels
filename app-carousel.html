@@ -1,0 +1,286 @@
+
+<style include="app-shared-styles">
+
+  :host {
+    display:        block;
+    position:       relative;
+    width:          100%;
+    pointer-events: none;
+    --carousel-dot-size:            8px;
+    --carousel-dot-spacing:         8px;
+    --carousel-ui-background-color: rgba(33, 33, 33, 0.3);
+    --carousel-ui-color:            var(--constant-light-text, white);
+    --carousel-ui-ink-color:        var(--constant-dark-text, #212121);
+  } 
+
+  /*
+    We use a css padding trick here.
+    Padding set to a percentage is 
+    measured from the element's width.
+  */
+
+  .aspect-wrapper {
+    display:  block;
+    position: relative; /* For <video> */
+    height:   0px;      /* Here, padding-top sets the height */
+    width:    100%;
+  }
+
+  /* Must be first aspect class since it is the default. */
+  .landscape {
+    padding-top: 56.25%; /* 16:9 aspect ratio. */
+  }
+
+  .classic {
+    padding-top: 75%; /* 4:3 aspect ratio. */
+  }
+
+  /* Dev must set height on <app-carousel>. */
+  .fill {
+    height:      100%; /* Fill containing element. */
+    padding-top: unset;
+  }
+
+  .portrait {
+    padding-top: 177.77%; /* 9:16 aspect ratio. */
+  }
+
+  .square {
+    padding-top: 100%; /* 1:1 aspect ratio. */
+  }
+
+  /*
+    Set a min-width on your slotted elements to 
+    override being collapsed to their minimum content.
+  */
+  #scrollContainer {
+    display:             flex;
+    position:            absolute;
+    top:                 0px;
+    left:                0px;
+    width:               100%;
+    height:              100%;
+    pointer-events:      auto;
+    overflow-x:          scroll;
+    overflow-y:          hidden;
+    scroll-snap-type:    x mandatory;
+
+    /* Enable iOS mobile scrolling. */
+    -webkit-overflow-scrolling: touch; 
+
+    /* Hide native scrollbar. */
+    scrollbar-width:    none;
+    -ms-overflow-style: none;
+  }
+
+  /* Allow content and/or container determine height. */
+  .fill #scrollContainer {
+    position: relative;
+  }
+
+  /* Hide Safari native scrollbar. */
+  #scrollContainer::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
+    Use the sudo-element to respect last child margin so 
+    IntersectionObserver will work correctly.
+  */
+  #scrollContainer::after {
+    content: '';
+    height:  100%;
+    width:   1px;
+  }
+
+  #itemsSlot::slotted(*) {
+    height:         100%;
+    width:          100%;    
+    pointer-events: auto;
+  }
+
+  /* 'position' prop binding. */
+  #itemsSlot.start::slotted(*) {
+    scroll-snap-align: start;
+  }
+
+  /* 'position' prop binding. */
+  #itemsSlot.center::slotted(*) {
+    scroll-snap-align: center;
+  }
+
+  /* 'position' prop binding. */
+  #itemsSlot.end::slotted(*) {
+    scroll-snap-align: end;
+  }
+
+  .nav-arrows {
+    position:         absolute;
+    top:              calc(50% - 20px);
+    border-radius:    50%;
+    pointer-events:   auto;
+    color:            var(--carousel-ui-color);
+    background-color: var(--carousel-ui-background-color);
+    --paper-icon-button-ink-color: var(--carousel-ui-ink-color);
+  }
+
+  #left-chevron {
+    left: 8px;
+  }
+
+  #right-chevron {
+    right: 8px;
+  }
+
+  #dots-container {
+    display:         flex;
+    justify-content: center;
+    width:           100%;
+    position:        absolute;
+    bottom:          16px;
+    pointer-events:  none;
+  }
+
+  #dots-background {
+    display:          inline-flex;
+    position:         relative;
+    background-color: var(--carousel-ui-background-color);
+
+    /* 
+      Dot background height === dot size plus top and 
+      bottom dot margin, or --carousel-dot-size * 3.
+      Thus border-radius must be half of the height 
+      to be completely rounded.
+    */
+    border-radius:    calc((var(--carousel-dot-size) * 3) / 2);
+  }
+
+  /* This is used as a larger click surface for each dot */
+  .dot-wrapper {
+    pointer-events: auto;
+  }
+
+  .dot {
+    width:            var(--carousel-dot-size);
+    height:           var(--carousel-dot-size);
+    margin-top:       var(--carousel-dot-size);
+    margin-bottom:    var(--carousel-dot-size);
+    margin-left:      var(--carousel-dot-spacing);
+    margin-right:     var(--carousel-dot-spacing);
+    border-radius:    50%;
+    background-color: var(--carousel-ui-color);
+    transition:       transform 0.3s ease-out;
+    transform:        scale(1, 1);
+  }
+
+  .dot.selected {
+    transform: scale(2, 2);
+  }
+
+  .av-icons {
+    display:          flex;
+    justify-content:  center;
+    align-items:      center;
+    width:            64px;
+    height:           64px;
+    position:         absolute;
+    top:              calc(50% - 32px);
+    left:             calc(50% - 32px);
+    border-radius:    50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition:       opacity 0.2s ease-in;
+    opacity:          0;
+    pointer-events:   none;
+  }
+
+  .show-av-icon {
+    opacity: 1;
+  }
+
+  iron-icon {
+    color: var(--carousel-ui-color, white);
+  }
+
+</style>
+
+
+<div class$="aspect-wrapper landscape [[aspectRatio]]">
+  
+  <!-- Don't allow selection for a more app feel with class="shared-no-select". -->
+  <!-- <div id="scrollContainer"
+       class="shared-no-select" 
+       on-mousedown="__containerOnDown"
+       on-touchstart="__containerOnDown"
+       on-mouseup="__containerOnUp"
+       on-touchend="__containerOnUp">
+    <slot id="slot"
+          class$="[[position]]"
+          on-slotchange="__slotChangedHandler">
+    </slot>
+  </div> -->
+
+  <!-- Temporary Safari workaround.
+  Cannot dynamically add slotted items with scroll-snap. -->
+  <slot id="scroller-slot" 
+        name="scroller">
+    <div id="scrollContainer"
+         class="shared-no-select" 
+         on-mousedown="__containerOnDown"
+         on-touchstart="__containerOnDown"
+         on-mouseup="__containerOnUp"
+         on-touchend="__containerOnUp">
+      <slot id="itemsSlot"
+            class$="[[position]]"
+            on-slotchange="__slotChangedHandler">
+      </slot>
+    </div>
+  </slot>
+
+
+
+</div>
+
+
+<template is="dom-if" 
+          if="[[nav]]">
+  <paper-icon-button id="left-chevron" 
+                     class="nav-arrows" 
+                     icon="app-icons:chevron-l"
+                     on-click="__leftNavArrowClicked"
+                     aria-label="Carousel left navagation">
+  </paper-icon-button>
+
+  <paper-icon-button id="right-chevron" 
+                     class="nav-arrows" 
+                     icon="app-icons:chevron-r"
+                     on-click="__rightNavArrowClicked"
+                     aria-label="Carousel right navagation">
+  </paper-icon-button>
+</template>
+
+<template is="dom-if" 
+          if="[[dots]]">
+  <div id="dots-container">
+    <div id="dots-background">
+      <template is="dom-repeat" 
+                items="[[_dotsArray]]">
+        <div class="dot-wrapper" 
+             on-click="__dotClicked">
+          <div class$="dot [[item.selected]]"></div>
+        </div>
+      </template>
+      <paper-ripple></paper-ripple>
+    </div>
+  </div>
+</template>
+
+
+<div id="playIcon" 
+     class="av-icons">
+  <iron-icon icon="app-icons:play-arrow"></iron-icon>
+</div>
+
+<div id="stopIcon" 
+     class="av-icons">
+  <iron-icon icon="app-icons:stop"></iron-icon>
+</div>
