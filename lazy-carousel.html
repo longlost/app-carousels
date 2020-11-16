@@ -1,0 +1,95 @@
+
+<style>
+  
+  :host {
+    display: block;
+    width:   100%;    
+    --lazy-carousel-dot-size:               8px;
+    --lazy-carousel-dot-spacing:            8px;
+    --lazy-carousel-image-border-radius:    0px;
+    --lazy-carousel-image-background-color: var(--app-background-color, grey);
+    --lazy-carousel-image-margin:           0px;
+    --lazy-carousel-image-width:            100%;
+    --lazy-carousel-ui-background-color:    rgba(33, 33, 33, 0.3);
+    --lazy-carousel-ui-color:               var(--constant-light-text, white);
+    --lazy-carousel-ui-ink-color:           var(--constant-dark-text, #212121);
+  }
+
+  app-carousel {
+    height: inherit;
+    --carousel-dot-size:            var(--lazy-carousel-dot-size);
+    --carousel-dot-spacing:         var(--lazy-carousel-dot-spacing);
+    --carousel-ui-background-color: var(--lazy-carousel-ui-background-color);
+    --carousel-ui-color:            var(--lazy-carousel-ui-color);
+    --carousel-ui-ink-color:        var(--lazy-carousel-ui-ink-color);
+  }
+
+  .img {
+    background-color: var(--lazy-carousel-image-background-color);
+    border-radius:    var(--lazy-carousel-image-border-radius);
+    margin:           var(--lazy-carousel-image-margin);
+    width:            var(--lazy-carousel-image-width);
+    min-width:        var(--lazy-carousel-image-width);
+  }
+
+</style>
+
+
+<template is="dom-if" 
+          if="[[!_typeIsLazyImage]]"
+          on-dom-change="__ifDomChange">
+
+  <app-carousel id="carousel" 
+                aspect-ratio="[[aspectRatio]]"
+                autoplay="[[autoplay]]" 
+                dots="[[dots]]"
+                flip-time="[[flipTime]]"
+                nav="[[nav]]"
+                position="[[position]]">
+
+    <template is="dom-repeat" 
+              items="[[images]]" 
+              as="image">    
+      <responsive-image class="img" 
+                        alt="[[image.alt]]"
+                        disable-auto-sizing
+                        responsive="[[image.src)]]" 
+                        sizing="[[sizing]]"
+                        trigger="[[trigger]]"
+                        on-click="__imageClicked">
+      </responsive-image>
+    </template>
+
+  </app-carousel>
+
+</template>
+
+
+<template is="dom-if" 
+          if="[[_typeIsLazyImage]]"
+          on-dom-change="__ifDomChange">
+
+  <app-carousel id="carousel"  
+                aspect-ratio="[[aspectRatio]]"
+                autoplay="[[autoplay]]" 
+                dots="[[dots]]"
+                flip-time="[[flipTime]]"
+                nav="[[nav]]"
+                position="[[position]]">
+
+    <template is="dom-repeat" 
+              items="[[images]]" 
+              as="image">
+      <lazy-image class="img"
+                  alt="[[image.alt]]"
+                  placeholder="[[image.placeholder]]"
+                  sizing="[[sizing]]" 
+                  src="[[image.src]]"
+                  trigger="[[trigger]]"
+                  on-click="__imageClicked">
+      </lazy-image>
+    </template>
+
+  </app-carousel>
+  
+</template>
