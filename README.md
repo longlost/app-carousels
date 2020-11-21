@@ -10,10 +10,10 @@ This element takes slotted elements and controls how they scroll horizontally.
 
 ```
 <app-carousel auto-play 
-        dots
-        flip-time="3500"
-        nav 
-        position="start">
+              dots
+              flip-time="3500"
+              nav 
+              position="start">
   <my-carousel-item></my-carousel-item>
   <my-carousel-item></my-carousel-item>
   <my-carousel-item></my-carousel-item>
@@ -24,7 +24,7 @@ This element takes slotted elements and controls how they scroll horizontally.
 
 
 Since the scroller element is **'display: flex'**, 
-you may have to set a **'min-width'**
+you may have to set a **'flex-basis'**, **'min-width'**, etc.
 on your elements to get the desired layout.
 
 
