@@ -77,26 +77,27 @@
 import {
   AppElement, 
   html
-} from '@longlost/app-element/app-element.js';
+} from '@longlost/app-core/app-element.js';
 
 import {
   head, 
   tail, 
   toObj
-} from '@longlost/lambda/lambda.js';
+} from '@longlost/app-core/lambda.js';
 
 import {
   isDisplayed, 
   schedule, 
   wait
-} from '@longlost/utils/utils.js';
+} from '@longlost/app-core/utils.js';
 
 import htmlString from './app-carousel.html';
-import '@longlost/app-icons/app-icons.js';
-import '@longlost/app-shared-styles/app-shared-styles.js';
+import '@longlost/app-core/app-icons.js';
+import '@longlost/app-core/app-shared-styles.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-ripple/paper-ripple.js';
 import '@polymer/iron-icon/iron-icon.js';
+import './app-carousel-icons.js';
 
 
 const isOdd = num => num % 2 === 1;
