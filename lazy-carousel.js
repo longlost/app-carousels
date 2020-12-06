@@ -98,8 +98,8 @@
   *
   **/
 
-import {AppElement, html} from '@longlost/app-element/app-element.js';
-import htmlString 				from './lazy-carousel.html';
+import {AppElement, html} from '@longlost/app-core/app-element.js';
+import htmlString         from './lazy-carousel.html';
 import './app-carousel.js';
 // 'lazy-image' and 'responsive-image' files imported dynamically.
 
@@ -215,10 +215,16 @@ class LazyCarousel extends AppElement {
     if (!type) { return; }
 
     if (this.type === 'responsive-image') {
-      import(/* webpackChunkName: 'responsive-image' */ '@longlost/app-images/responsive-image.js');
+      import(
+        /* webpackChunkName: 'responsive-image' */ 
+        '@longlost/app-images/responsive-image.js'
+      );
     }
     else {
-      import(/* webpackChunkName: 'lazy-image' */ '@longlost/app-images/lazy-image.js');
+      import(
+        /* webpackChunkName: 'lazy-image' */ 
+        '@longlost/app-images/lazy-image.js'
+      );
     }
   }
 
