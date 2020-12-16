@@ -21,7 +21,7 @@
   *
   *     Properties:
   *
-  *       aspect-ratio <String> 'landscape', Width to height ratio.
+  *       aspect       <String> 'landscape', Width to height ratio.
   *                                          'classic'   --> 4:3
   *                                          'fill'      --> Same width and height of parent.
   *                                                          Dev must set height on <app-carousel>.  
@@ -119,7 +119,7 @@ class AppCarousel extends AppElement {
 
       // Sets the proportion of width to height.
       // 'classic', 'fill', 'landscape', 'portrait' or 'square'
-      aspectRatio: {
+      aspect: {
         type: String,
         value: 'landscape'
       },

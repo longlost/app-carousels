@@ -29,7 +29,7 @@
   *
   *     Properties:
   *
-  *       aspect-ratio <String> 'landscape',   Width to height ratio.
+  *       aspect       <String> 'landscape',   Width to height ratio.
   *                                            'classic'   --> 4:3
   *                                            'fill'      --> Same width and height of parent.
   *                                                            Dev must set height on <app-carousel>.  
@@ -99,9 +99,10 @@
   **/
 
 import {AppElement, html} from '@longlost/app-core/app-element.js';
+import {consumeEvent}     from '@longlost/app-core/utils.js';
 import htmlString         from './lazy-carousel.html';
+import '@longlost/app-images/app-image.js';
 import './app-carousel.js';
-// 'lazy-image' and 'responsive-image' files imported dynamically.
 
 
 class LazyCarousel extends AppElement {
@@ -116,7 +117,7 @@ class LazyCarousel extends AppElement {
 
       // Sets the proportion of width to height.
       // 'classic', 'fill', 'landscape', 'portrait' or 'square'
-      aspectRatio: {
+      aspect: {
         type: String,
         value: 'landscape'
       },
@@ -124,6 +125,19 @@ class LazyCarousel extends AppElement {
       // Set true to have carousel iterate 
       // through sections automatically.
       autoplay: Boolean,
+
+      // Set to true, to enable each image to be an interactive button. 
+      //
+      // The element will be reachalble via keyboard tabbing, and clickable. 
+      // While focused, the 'enter' and 'space' keys trigger click events. 
+      // Button mode includes a material design ripple.
+      //
+      // The 'lazy-carousel-image-clicked' custom event is fired 
+      // after click and the ripple animation has completed.
+      button: {
+        type: Boolean,
+        value: false
+      },
 
       // Display navigation dots when true.
       dots: Boolean,
@@ -137,12 +151,17 @@ class LazyCarousel extends AppElement {
       // A collection of image objects.
       // ie. [
       //   {
-      //     alt:         'My cool image.',
+      //     alt:         'My cool image.', 
       //     placeholder: 'https://my-cool-images.com/my-cool-image_thumbnail.jpg' (optional but recommended)
-      //     src:         'https://my-cool-images.com/my-cool-image.jpg'
+      //     src:         'https://my-cool-images.com/my-cool-image.jpg', (or 'afs' item, or responsiive obj)
+      //     text:        'Sweet image!'
       //   },
       //   ...
       // ]
+      //
+      // 'alt' - Automatically filled in when using an 'afs' file item.
+      // 'placeholder' only used when 'src' is a string.
+      // 'src' - URL String, 'afs' file item, or 'responsive-loader' obj.
       images: Array, 
 
       // Set to true to have clickable navigation arrows.
@@ -153,6 +172,21 @@ class LazyCarousel extends AppElement {
         type: String,
         value: 'center'
       },
+
+      // The prefered quality level.
+      //
+      // Only used if 'src' auto-detect determines that an 
+      // 'afs' file item is being used.
+      //
+      // This is ignored if 'responsive-image' is being used, since
+      // the browser is allowed to determine the quality/size via 'srcSet'.
+      quality: {
+        type: String,
+        value: 'thumbnail' // Or 'optimized' or 'original'.
+      },
+
+      // Add a shadow to each image.
+      raised: Boolean,
 
       // Image sizing type.
       sizing: {
@@ -172,117 +206,43 @@ class LazyCarousel extends AppElement {
       trigger: {
         type: Number,
         value: 0
-      },
-
-      // Image element type.
-      // Use 'responsive-image' for static images
-      // that are built into the app with webpack.
-      // Use 'lazy-image' for dynamic images such 
-      // as images downloaded from a database or
-      // other external source.
-      type: {
-        type: String,
-        value: 'lazy-image' // or 'responsive-image'
-      },
-
-      // Cached reference for app-carousel element.
-      // Used to call carousel methods.
-      _carousel: Object,
-
-      // Drives both dom-if templates.
-      _typeIsLazyImage: {
-        type: Boolean,
-        computed: '__computeTypeIsLazyImage(type)'
       }
 
     };
   }
 
 
-  static get observers() {
-    return [
-      '__typeChanged(type)'
-    ];
-  }
+  __imageClicked(event) {
+    consumeEvent(event);
 
-  // For dom-if templates.
-  __computeTypeIsLazyImage(type) {
-    return type === 'lazy-image';
-  }
+    const {image, index} = event.model;
 
-
-  __typeChanged(type) {
-    if (!type) { return; }
-
-    if (this.type === 'responsive-image') {
-      import(
-        /* webpackChunkName: 'responsive-image' */ 
-        '@longlost/app-images/responsive-image.js'
-      );
-    }
-    else {
-      import(
-        /* webpackChunkName: 'lazy-image' */ 
-        '@longlost/app-images/lazy-image.js'
-      );
-    }
-  }
-
-
-  __ifDomChange() {
-    this._carousel = this.select('#carousel');
-  }
-
-
-  async __imageClicked(event) {
-    try {
-      await this.clicked();
-
-      const {image, index} = event.model;
-      this.fire('lazy-carousel-image-clicked', {image, index});
-    }
-    catch (error) {
-      if (error === 'click debounced') { return; }
-      console.error(error);
-    }
-  }
-
-
-  __checkCarousel() {
-    
-    if (!this._carousel) {
-      throw new Error('Carousel not stamped yet, please wait.');
-    }    
+    this.fire('lazy-carousel-image-clicked', {image, index});
   }
 
 
   animateToSection(index) {
-    this.__checkCarousel();
-    this._carousel.animateToSection(index);
+    this.$.carousel.animateToSection(index);
   }
 
 
   moveToSection(index) {
-    this.__checkCarousel();
-    this._carousel.moveToSection(index);
+    this.$.carousel.moveToSection(index);
   }
 
 
   nextItem(direction, recycle) {
-    this.__checkCarousel();
-    this._carousel.nextItem(direction, recycle);
+    this.$.carousel.nextItem(direction, recycle);
   }
 
 
   play() {
-    this.__checkCarousel();
-    this._carousel.play();
+    this.$.carousel.play();
   }
 
 
   stop() {
-    this.__checkCarousel();
-    this._carousel.stop();
+    this.$.carousel.stop();
   }
 
 }
