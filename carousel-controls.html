@@ -1,0 +1,156 @@
+
+<style>
+
+  :host {
+    display: contents;
+
+    --controls-dot-size:            8px;
+    --controls-dot-spacing:         8px;
+    --controls-ui-background-color: rgba(33, 33, 33, 0.3);
+    --controls-ui-color:            var(--constant-light-text, white);
+    --controls-ui-ink-color:        var(--constant-dark-text, #212121);
+  } 
+
+  .nav-arrows {
+    position:         absolute;
+    top:              calc(50% - 20px);
+    border-radius:    50%;
+    pointer-events:   auto;
+    color:            var(--controls-ui-color);
+    background-color: var(--controls-ui-background-color);
+    --paper-icon-button-ink-color: var(--controls-ui-ink-color);
+  }
+
+  #left-chevron {
+    left: 8px;
+  }
+
+  #right-chevron {
+    right: 8px;
+  }
+
+  #dots-container {
+    display:         flex;
+    justify-content: center;
+    width:           100%;
+    position:        absolute;
+    bottom:          16px;
+    pointer-events:  none;
+  }
+
+  #dots-background {
+    display:          inline-flex;
+    position:         relative;
+    background-color: var(--controls-ui-background-color);
+
+    /* 
+      Dot background height === dot size plus top and 
+      bottom dot margin, or --controls-dot-size * 3.
+      Thus border-radius must be half of the height 
+      to be completely rounded.
+    */
+    border-radius: calc((var(--controls-dot-size) * 3) / 2);
+  }
+
+  /* This is used as a larger click surface for each dot */
+  .dot-wrapper {
+    pointer-events: auto;
+  }
+
+  .dot {
+    width:            var(--controls-dot-size);
+    height:           var(--controls-dot-size);
+    margin-top:       var(--controls-dot-size);
+    margin-bottom:    var(--controls-dot-size);
+    margin-left:      var(--controls-dot-spacing);
+    margin-right:     var(--controls-dot-spacing);
+    border-radius:    50%;
+    background-color: var(--controls-ui-color);
+    transition:       transform 0.3s ease-out;
+    transform:        scale(1, 1);
+  }
+
+  .dot.selected {
+    transform: scale(2, 2);
+  }
+
+  .av-icons {
+    display:          flex;
+    justify-content:  center;
+    align-items:      center;
+    width:            64px;
+    height:           64px;
+    position:         absolute;
+    top:              calc(50% - 32px);
+    left:             calc(50% - 32px);
+    border-radius:    50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition:       opacity 0.2s ease-in;
+    opacity:          0;
+    pointer-events:   none;
+  }
+
+  .show-av-icon {
+    opacity: 1;
+  }
+
+  iron-icon {
+    color: var(--controls-ui-color, white);
+  }
+
+</style>
+
+
+<template is="dom-if" 
+          if="[[nav]]"
+          restamp>
+  <paper-icon-button id="left-chevron" 
+                     class="nav-arrows" 
+                     aria-label="Carousel left navagation"
+                     icon="app-icons:chevron-l"
+                     on-click="__leftNavArrowClicked">
+  </paper-icon-button>
+
+  <paper-icon-button id="right-chevron" 
+                     class="nav-arrows" 
+                     aria-label="Carousel right navagation"
+                     icon="app-icons:chevron-r"
+                     on-click="__rightNavArrowClicked">
+  </paper-icon-button>
+</template>
+
+
+<template is="dom-if" 
+          if="[[dots]]"
+          restamp>
+
+  <div id="dots-container">
+    <div id="dots-background">
+
+      <template is="dom-repeat" 
+                items="[[_dotItems]]">
+
+        <div class="dot-wrapper" 
+             on-click="__dotClicked">
+          <div class$="dot [[item.selected]]"></div>
+        </div>
+
+      </template>
+
+      <paper-ripple></paper-ripple>
+
+    </div>
+  </div>
+
+</template>
+
+
+<div id="playIcon" 
+     class="av-icons">
+  <iron-icon icon="carousel-icons:play-arrow"></iron-icon>
+</div>
+
+<div id="stopIcon" 
+     class="av-icons">
+  <iron-icon icon="carousel-icons:stop"></iron-icon>
+</div>
