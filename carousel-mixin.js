@@ -509,7 +509,7 @@ export const CarouselMixin = superClass => {
       // Run once, when the first batch of snap-item elements
       // is stamped. Elements that are added after this are
       // added to the observer and cache as they are created.
-      if (this._entries) { return; }
+      if (this._carouselName === 'recycled' && this._entries) { return; }
 
       // Hack!! See notes in properties definition above.
       this._maxIntersecting = undefined;
