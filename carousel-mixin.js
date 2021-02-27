@@ -148,6 +148,9 @@ export const CarouselMixin = superClass => {
         // and animation.
         _resizeIndex: Number,
 
+        // ResizeObserver instance.
+        _resizeObserver: Object,
+
         // Section count is smaller than item count if 
         // displaying more multiple items at a time.
         _sectionCount: {
@@ -211,9 +214,9 @@ export const CarouselMixin = superClass => {
       }
 
       this.__resizeHandler = this.__resizeHandler.bind(this);
+      this._resizeObserver = new window.ResizeObserver(this.__resizeHandler);
 
-      // Correct for screen resizes.
-      window.addEventListener('resize', this.__resizeHandler);
+      this._resizeObserver.observe(this);
 
       // Scroll options polyfill for safari, supports {behavior: 'smooth'}
       // for all scroll functions (ie. window.scrollTo, element.scrollIntoVeiw).
@@ -230,7 +233,8 @@ export const CarouselMixin = superClass => {
 
       super.disconnectedCallback();
 
-      window.removeEventListener('resize', this.__resizeHandler);
+      this._resizeObserver?.disconnect();
+      this._resizeObserver = undefined;
 
       this.__cleanupIntersectionObserver(this._elements);
     }
