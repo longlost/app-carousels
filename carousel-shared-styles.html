@@ -66,13 +66,7 @@
       pointer-events:      auto;
       overflow-x:          scroll;
       overflow-y:          hidden;
-
-      /*
-        The use of important here is a fix for the scroll-behavior-polyfill,
-        which sets 'scroll-snap-type' to 'none' via Javascript when used,
-        ie. when nav ui is used to programmically scroll the carousel.
-      */
-      scroll-snap-type: x mandatory !important;
+      scroll-snap-type:    x mandatory;
 
       /* Enable iOS mobile scrolling. */
       -webkit-overflow-scrolling: touch; 
