@@ -20,8 +20,8 @@
   },
   "homepage": "https://github.com/longlost/app-carousels#readme",
   "dependencies": {
-    "@longlost/app-core": "^2.3.0",
-    "@longlost/app-images": "^2.1.0",
+    "@longlost/app-core": "^6.0.6",
+    "@longlost/app-images": "^2.2.2",
     "@longlost/app-lists": "^1.1.0",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
