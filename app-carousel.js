@@ -161,25 +161,6 @@ class AppCarousel extends CarouselMixin(AppElement) {
     }
   }
 
-  // Safari workaround.
-  // Safari resets the scroller's position after
-  // a programmic scroll when scroll-snap is used.
-  __safariProgrammicScrollSnapFix(index) {
-    
-    if (index !== this._expectedIndex) { return; } // Not a programmic change.
-
-    this._expectedIndex = undefined;
-
-    // MUST use rAF here for Safari!
-    window.requestAnimationFrame(() => {     
-      const left = this.scrollContainer.scrollLeft;
-
-      if (typeof left !== 'number') { return; }
-      
-      this.__dynamicScrollerPositionCorrection(left);
-    });
-  }
-
 
   __sectionIndexChanged(index, oldIndex) {
 
@@ -189,9 +170,7 @@ class AppCarousel extends CarouselMixin(AppElement) {
 
     if (typeof index !== 'number') { return; }
 
-    this.fire('app-carousel-section-index-changed', {value: index});    
-
-    this.__safariProgrammicScrollSnapFix(index);
+    this.fire('app-carousel-section-index-changed', {value: index}); 
   }
 
 
@@ -203,33 +182,16 @@ class AppCarousel extends CarouselMixin(AppElement) {
   }
 
 
-  __goToSection(index, behavior = 'smooth') {    
-
-    // Safari polyfill bug!   
-    // Cannot use scrollIntoView with 
-    // 'scroll-behavior-polyfill' as of version 2.0.13,
-    // because ther is a bug with the polyfill correctly 
-    // finding slotted elements' scroller parent.
-    // target.scrollIntoView({ // does not work in safari
-    //   behavior,
-    //   block:  'nearest',
-    //   inline: 'center'
-    // });
-
-    // Safari fix.
-    // Safari resets the scroller's position after
-    // a programmic scroll when scroll-snap is used.
-    // See '__safariProgrammicScrollSnapFix' method.
-    this._expectedIndex = index;
+  __goToSection(index, behavior = 'smooth') { 
 
     this.__interrupt();
 
-    const left = this.__getLeftDeltaFromIndex(index);
+    const {target} = this._sections[index];
 
-    this.scrollContainer.scrollBy({
-      top: 0,
-      left,
-      behavior
+    target.scrollIntoView({
+      behavior,
+      block:  'nearest',
+      inline: this.position
     });
   }
 

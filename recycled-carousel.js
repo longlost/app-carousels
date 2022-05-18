@@ -396,24 +396,7 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
   }
 
 
-  async __goToSection(index, behavior = 'smooth') {    
-
-    // Safari polyfill bug!   
-    // Cannot use scrollIntoView with 
-    // 'scroll-behavior-polyfill' as of version 2.0.13,
-    // because ther is a bug with the polyfill correctly 
-    // finding slotted elements' scroller parent.
-    // target.scrollIntoView({ // Does NOT work in Safari.
-    //   behavior,
-    //   block:  'nearest',
-    //   inline: 'center'
-    // });
-
-    // Safari fix.
-    // Safari resets the scroller's position after
-    // a programmic scroll when scroll-snap is used.
-    // See '__safariProgrammicScrollSnapFix' method.
-    this._expectedIndex = index;
+  async __goToSection(index, behavior = 'smooth') { 
 
     this.__interrupt();
 
@@ -426,12 +409,12 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
       await listenOnce(this.$.snapRepeater, 'dom-change');
     }
 
-    const left = this.__getLeftDeltaFromIndex(index);
+    const {target} = this._sections[index];
 
-    this.scrollContainer.scrollBy({
-      top: 0,
-      left,
-      behavior
+    target.scrollIntoView({
+      behavior,
+      block:  'nearest',
+      inline: this.position
     });
   }
 
