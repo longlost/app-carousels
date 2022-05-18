@@ -1,6 +1,6 @@
 {
   "name": "@longlost/app-carousels",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "A collection of easy to use carousel UI elements.",
   "main": "index.js",
   "scripts": {
@@ -20,13 +20,12 @@
   },
   "homepage": "https://github.com/longlost/app-carousels#readme",
   "dependencies": {
-    "@longlost/app-core": "^6.0.6",
+    "@longlost/app-core": "^7.0.5",
     "@longlost/app-images": "^2.2.2",
     "@longlost/app-lists": "^1.1.0",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
     "@polymer/paper-icon-button": "^3.0.2",
-    "@polymer/paper-ripple": "^3.0.2",
-    "scroll-behavior-polyfill": "^2.0.13"
+    "@polymer/paper-ripple": "^3.0.2"
   }
 }

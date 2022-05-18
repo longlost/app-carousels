@@ -99,12 +99,6 @@ export const CarouselMixin = superClass => {
           observer: '__elementsChanged'
         },
 
-        // Used for a Safari workaround.
-        // Safari resets the scroller's position after
-        // a programmic scroll when scroll-snap is used.
-        // See '__safariProgrammicScrollSnapFix' method.
-        _expectedIndex: Number,
-
         // Cached, reused instance of IntersectionObserver.
         _intersectionObserver: Object,
 
@@ -217,15 +211,6 @@ export const CarouselMixin = superClass => {
       this._resizeObserver = new window.ResizeObserver(this.__resizeHandler);
 
       this._resizeObserver.observe(this);
-
-      // Scroll options polyfill for safari, supports {behavior: 'smooth'}
-      // for all scroll functions (ie. window.scrollTo, element.scrollIntoVeiw).
-      if (!('scrollBehavior' in document.documentElement.style)) {
-        import(
-          /* webpackChunkName: 'scroll-polyfill' */ 
-          'scroll-behavior-polyfill'
-        );
-      }
     }
 
 
@@ -598,99 +583,6 @@ export const CarouselMixin = superClass => {
       }
     }
 
-    // Reset the scroller back to the current item.
-    __dynamicScrollerPositionCorrection(left) {
-
-      // Chrome and FireFox will respect the first attempt to reset
-      // the scroller's position, but Safari is very stubborn.
-      // The number of attempts to reset its position varies greatly,
-      // so take dynamic measurements and keep trying until it works.
-      const correctScrollPosition = (tries, doubleChecked) => {
-
-        // MUST be rAF and NOT `schedule` for Safari!
-        window.requestAnimationFrame(() => {
-
-          // Bail if the carousel is not visible or ready.
-          if (!this.scrollContainer || !isDisplayed(this)) { return; } 
-
-          // Give up trying if this consumes too much time and is not
-          // working effectively. Safari is unpredictable.
-          if (this.scrollContainer.scrollLeft === left || tries === 10) {
-
-            // The scroller is where it should be.
-            // Double check that it is, measure it one more time.
-            if (!doubleChecked) {            
-              correctScrollPosition(tries, true);
-            }
-          }
-          else {
-
-            // Attempt to move the scroller back to the correct position again.
-            this.scrollContainer.scroll(left, 0);
-
-            // Increment 'tries' and measure again.
-            correctScrollPosition(tries + 1, false);
-          }        
-        });     
-      };
-
-      // This first try works on Chrome and Firefox, but not Safari.
-      // For some strange reason, the first call to .scroll must
-      // be different than the next for it to work correctly on Safari.
-      // Without this, a single frame of the scroller being in the 
-      // previous position is rendered before being corrected.
-      this.scrollContainer.scroll(left - 1, 0);
-
-      correctScrollPosition(1, false);
-    }
-
-
-    __getLeftDeltaFromIndex(index) {
-
-      if (!this._sections[index]) { return 0; }
-
-      // Dynamically measure scroller and target elements
-      // in order to catch all resizes.
-      const {target}      = this._sections[index];
-      const bbox          = target.getBoundingClientRect();
-      const containerBBox = this.scrollContainer.getBoundingClientRect();
-
-      const getDelta = () => {
-
-        if (this.position === 'start') {
-          const targetX    = bbox.x;
-          const containerX = containerBBox.x;
-
-          return targetX - containerX;
-        }
-
-        if (this.position === 'end') {
-          const targetX    = bbox.x          + bbox.width;
-          const containerX = containerBBox.x + containerBBox.width;
-
-          return targetX - containerX;
-        }
-
-        if (this.position === 'center') {
-
-          // Find centers since widths can vary.
-          const targetCenter    = getCenter(bbox);
-          const containerCenter = getCenter(containerBBox);
-
-          // Use the distance between centers to pass in to scrollBy.
-          return targetCenter - containerCenter;
-        }
-
-        throw new Error(`${this._carouselName}-carousel position property must one of three choices - 
-          'start'
-          'center'
-          'end'
-        `);
-      };
-
-      return getDelta();
-    }
-
     // This observer ensures that there are stamped
     // sections when a 'resize' event is fired.
     async __resizeIndexSectionsChanged(index, sections) {
@@ -699,14 +591,18 @@ export const CarouselMixin = superClass => {
 
       this._resizeIndex = undefined;
 
+      this.__interrupt();
+
       // Must have for Safari.
       await schedule();
 
-      const delta = this.__getLeftDeltaFromIndex(index);
-      const left  = this.scrollContainer.scrollLeft + delta;
+      const {target} = sections[index];
 
-      this.__interrupt();
-      this.__dynamicScrollerPositionCorrection(left);
+      target.scrollIntoView({
+        behavior: 'auto',
+        block:    'nearest',
+        inline:   this.position
+      });
     }
 
 
