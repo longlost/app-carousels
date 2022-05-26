@@ -110,8 +110,8 @@ import {AppElement, html} from '@longlost/app-core/app-element.js';
 import {CarouselMixin}    from './carousel-mixin.js';
 import {hijackEvent}      from '@longlost/app-core/utils.js';
 import htmlString         from './app-carousel.html';
-import '@longlost/app-core/app-shared-styles.js';
-import './carousel-shared-styles.js';
+import '@longlost/app-core/app-shared-styles.css';
+import './carousel-shared-styles.css';
 import './carousel-controls.js';
 
 
