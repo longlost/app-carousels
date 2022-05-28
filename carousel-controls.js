@@ -66,9 +66,9 @@
   *
   **/
 
-import {AppElement, html} from '@longlost/app-core/app-element.js';
-import {wait}             from '@longlost/app-core/utils.js';
-import htmlString         from './carousel-controls.html';
+import {AppElement} from '@longlost/app-core/app-element.js';
+import {wait}       from '@longlost/app-core/utils.js';
+import template     from './carousel-controls.html';
 import '@longlost/app-core/app-icons.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-ripple/paper-ripple.js';
@@ -81,7 +81,7 @@ class CarouselControls extends AppElement {
   static get is() { return 'carousel-controls'; }
 
   static get template() {
-    return html([htmlString]);
+    return template;
   }
 
 

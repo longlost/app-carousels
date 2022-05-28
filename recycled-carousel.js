@@ -142,10 +142,10 @@
   **/
   
 
-import {AppElement, html}        from '@longlost/app-core/app-element.js';
+import {AppElement}              from '@longlost/app-core/app-element.js';
 import {CarouselMixin}           from './carousel-mixin.js';
 import {hijackEvent, listenOnce} from '@longlost/app-core/utils.js';
-import htmlString                from './recycled-carousel.html';
+import template                  from './recycled-carousel.html';
 import '@longlost/app-core/app-shared-styles.css';
 import '@longlost/app-lists/recycled-list.js';
 import './carousel-shared-styles.css';
@@ -157,7 +157,7 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
   static get is() { return 'recycled-carousel'; }
 
   static get template() {
-    return html([htmlString]);
+    return template;
   }
 
 

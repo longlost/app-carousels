@@ -98,18 +98,19 @@
   *
   **/
 
-import {AppElement, html} from '@longlost/app-core/app-element.js';
-import {consumeEvent}     from '@longlost/app-core/utils.js';
-import htmlString         from './lazy-carousel.html';
+import {AppElement}   from '@longlost/app-core/app-element.js';
+import {consumeEvent} from '@longlost/app-core/utils.js';
+import template       from './lazy-carousel.html';
 import '@longlost/app-images/app-image.js';
 import './app-carousel.js';
 
 
 class LazyCarousel extends AppElement {
+
   static get is() { return 'lazy-carousel'; }
 
   static get template() {
-    return html([htmlString]);
+    return template;
   }
 
   static get properties() {
@@ -213,6 +214,7 @@ class LazyCarousel extends AppElement {
 
 
   __imageClicked(event) {
+
     consumeEvent(event);
 
     const {image, index} = event.model;
@@ -222,26 +224,31 @@ class LazyCarousel extends AppElement {
 
 
   animateToSection(index) {
+
     this.$.carousel.animateToSection(index);
   }
 
 
   moveToSection(index) {
+
     this.$.carousel.moveToSection(index);
   }
 
 
   nextItem(direction, recycle) {
+
     this.$.carousel.nextItem(direction, recycle);
   }
 
 
   play() {
+
     this.$.carousel.play();
   }
 
 
   stop() {
+    
     this.$.carousel.stop();
   }
 
