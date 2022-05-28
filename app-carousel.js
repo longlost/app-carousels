@@ -106,10 +106,10 @@
   **/
   
 
-import {AppElement, html} from '@longlost/app-core/app-element.js';
-import {CarouselMixin}    from './carousel-mixin.js';
-import {hijackEvent}      from '@longlost/app-core/utils.js';
-import htmlString         from './app-carousel.html';
+import {AppElement}    from '@longlost/app-core/app-element.js';
+import {CarouselMixin} from './carousel-mixin.js';
+import {hijackEvent}   from '@longlost/app-core/utils.js';
+import template        from './app-carousel.html';
 import '@longlost/app-core/app-shared-styles.css';
 import './carousel-shared-styles.css';
 import './carousel-controls.js';
@@ -120,7 +120,7 @@ class AppCarousel extends CarouselMixin(AppElement) {
   static get is() { return 'app-carousel'; }
 
   static get template() {
-    return html([htmlString]);
+    return template;
   }
 
 
