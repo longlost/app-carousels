@@ -587,7 +587,7 @@ export const CarouselMixin = superClass => {
     // sections when a 'resize' event is fired.
     async __resizeIndexSectionsChanged(index, sections) {
 
-      if (typeof index !== 'number' || !sections) { return; }
+      if (typeof index !== 'number' || !Array.isArray(sections)) { return; }
 
       this._resizeIndex = undefined;
 
@@ -596,9 +596,13 @@ export const CarouselMixin = superClass => {
       // Must have for Safari.
       await schedule();
 
+      // Check again, after awaiting the schedule.
+      if (!Array.isArray(sections) || !sections[index]) { return; }
+
       const {target} = sections[index];
 
-      target.scrollIntoView({
+      // Check again, after awaiting the schedule.
+      target?.scrollIntoView?.({
         behavior: 'auto',
         block:    'nearest',
         inline:   this.position
