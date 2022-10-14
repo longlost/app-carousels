@@ -1,6 +1,6 @@
 
 /**
-  * `recycled-carousel`
+  * `lite-carousel`
   * 
   *   A horizontally scrolled ui element used to display a list of 
   *   uniformly sized elements in a highly performant manner.
@@ -16,18 +16,20 @@
   *       - the number of items is relatively large
   *
   *       - pagination is required
+  * 
+  *       - an infinite scrolling carousel is required.
   *
   *       - child elements are sized identically
   *
   *
-  *     Because of the way in which `recycled-carousel` currently works around browser
+  *     Because of the way in which `lite-carousel` currently works around browser
   *     scroll snap re-snapping, it introduces a skipped frame anytime it is scrolled
   *     beyond the point of its internal scroll-snap target elements. This is due to
   *     it adding new snap target elements on the fly, as needed, which triggers a 
   *     re-snap calculation to be made by the browser.
   *
   *     Keep this in mind, along with the fact that child elements MUST be the same 
-  *     size when choosing to use `recycled-carousel`.
+  *     size when choosing to use `lite-carousel`.
   *
   *   
   *   Styling:
@@ -53,7 +55,7 @@
   *       aspect       <String> 'landscape', Width to height ratio.
   *                                          'classic'   --> 4:3
   *                                          'fill'      --> Same width and height of parent.
-  *                                                          Dev must set height on <recycled-carousel>.  
+  *                                                          Dev must set height on <lite-carousel>.  
   *                                          'landscape' --> 16:9
   *                                          'portrait'  --> 9:16
   *                                          'square'    --> Height equal to width.
@@ -101,24 +103,24 @@
   *     Events:
   *
   *
-  *       'recycled-carousel-centered-changed', {value: entry}
+  *       'lite-carousel-centered-changed', {value: entry}
   *
   *         Fired each time a new element becomes centered in the carousel.
   *
   *
   *
-  *       'recycled-carousel-current-items-changed', {value: items}
+  *       'lite-carousel-current-items-changed', {value: items}
   *
-  *         Fired when the underlying 'recycled-list' currently stamped items changes.
+  *         Fired when the underlying 'lite-list' currently stamped items changes.
   *         Detail value is an array which is a subset of the provided 'items' array. 
   *         This array MUST drive the external template repeater, to keep items 
   *         synchronized with their recycled containers.
   *
   *
   *
-  *       'recycled-carousel-pagination-changed', {value: {count, end, start}} 
+  *       'lite-carousel-pagination-changed', {value: {count, end, start}} 
   *
-  *         Fired anytime the underlying 'recycled-list' requests more items
+  *         Fired anytime the underlying 'lite-list' requests more items
   *         to be added to the input 'items' array.
   *         Detail value is an object that contains 'count' 
   *         (number of recycled containers), 'start' and 'end' indexes.
@@ -128,7 +130,7 @@
   *
   *
   *
-  *       'recycled-carousel-section-index-changed', {value: index}
+  *       'lite-carousel-section-index-changed', {value: index}
   *
   *         Fired each time the section index changes.
   *
@@ -145,16 +147,16 @@
 import {AppElement}              from '@longlost/app-core/app-element.js';
 import {CarouselMixin}           from './carousel-mixin.js';
 import {hijackEvent, listenOnce} from '@longlost/app-core/utils.js';
-import template                  from './recycled-carousel.html';
+import template                  from './lite-carousel.html';
 import '@longlost/app-core/app-shared-styles.css';
-import '@longlost/app-lists/recycled-list.js';
+import '@longlost/app-lists/lite-list.js';
 import './carousel-shared-styles.css';
 import './carousel-controls.js';
 
 
-class RecycledCarousel extends CarouselMixin(AppElement) {
+class LiteCarousel extends CarouselMixin(AppElement) {
 
-  static get is() { return 'recycled-carousel'; }
+  static get is() { return 'lite-carousel'; }
 
   static get template() {
     return template;
@@ -176,7 +178,7 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
       // dependent on scroll position.
       items: Array,
 
-      // The width of `recycled-list` is multiplied by
+      // The width of `lite-list` is multiplied by
       // this number when stamping reusable containers. 
       //
       // The new value is used to calculate how many 
@@ -201,18 +203,18 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
 
       _carouselName: {
         type: String,
-        value: 'recycled',
+        value: 'lite',
         readOnly: true
       },
 
       // Section count is smaller than item count if 
-      // displaying more multiple items at a time.
+      // multiple items are visible at a time.
       _initialSectionCount: {
         type: Number,
         computed: '__computeSectionCount(items.length, _maxIntersecting, position)'
       },
 
-      // Drives slotted template repeater for `recycled-list`.
+      // Drives slotted template repeater for `lite-list`.
       _slotItems: Array,
 
       // Browser scroll-snap re-snapping workaround items.
@@ -244,7 +246,7 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
     const {value: items} = event.detail;    
 
     // Sync the number of available repeated slots with
-    // that of `recycled-list`.
+    // that of `lite-list`.
     if (this._slotItems?.length !== items.length) {
       this._slotItems = items.map(item => undefined);
     }
@@ -279,7 +281,7 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
   //      re-snapping workaround.
   //
   //      Must ensure that snap-scroll target elements are EXACTLY
-  //      the same size as 'recycled-list' containers, otherwise
+  //      the same size as 'lite-list' containers, otherwise
   //      the snap points will become offset from the slotted children.
   __recycledListSampleBboxHandler(event) {
 
@@ -400,7 +402,7 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
 
     this.__interrupt();
 
-    // Wait until new snap items are added before attempting to move 
+    // Wait until new snap items are added before attempting to move.
     const diff  = (index - 1) - (this._snapItems.length - this._slotItems.length);
 
     if (diff > 0) {
@@ -420,4 +422,4 @@ class RecycledCarousel extends CarouselMixin(AppElement) {
 
 }
 
-window.customElements.define(RecycledCarousel.is, RecycledCarousel);
+window.customElements.define(LiteCarousel.is, LiteCarousel);
