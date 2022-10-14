@@ -1,6 +1,6 @@
 {
   "name": "@longlost/app-carousels",
-  "version": "3.0.7",
+  "version": "4.0.0",
   "description": "A collection of easy to use carousel UI elements.",
   "main": "index.js",
   "scripts": {
