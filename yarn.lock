@@ -403,6 +403,21 @@
     mime-types "^2.1.35"
     workbox-window "^6.5.3"
 
+"@longlost/app-core@^9.0.4":
+  version "9.0.4"
+  resolved "https://registry.yarnpkg.com/@longlost/app-core/-/app-core-9.0.4.tgz#a36f0b74786062466bf08b0ed90d199e1231a941"
+  integrity sha512-nPg9UL3AoWSVZIWIgD9xQkI1K0NDbI7OKa/vTCEeNGKMl2eUOmqPGvhw3CIwGzURJh7LZrcFq4jy8421dvQ/+Q==
+  dependencies:
+    "@polymer/iron-iconset-svg" "^3.0.1"
+    "@polymer/paper-styles" "^3.0.1"
+    "@polymer/polymer" "^3.5.1"
+    "@ungap/global-this" "^0.4.4"
+    comlink "^4.3.1"
+    firebase "^9.8.2"
+    firebaseui "^6.0.1"
+    mime-types "^2.1.35"
+    workbox-window "^6.5.3"
+
 "@longlost/app-images@^2.2.4":
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/@longlost/app-images/-/app-images-2.2.4.tgz#9d56add23bf2dc79ed3a7eb6afed504fd9d2a6fd"
@@ -414,13 +429,13 @@
     "@polymer/iron-image" "^3.0.2"
     "@polymer/paper-button" "^3.0.1"
 
-"@longlost/app-lists@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-1.1.1.tgz#5fd0a71ef5c8a2186c350b9a4011ad88ff8e1495"
-  integrity sha512-tMAwICXUz1AI36GWDrQggkX/7ZkMmUDBdiKC4dlMSF3eZ7OVfo+2OXK3Lh7atolxPVL3MFzNObGt7T8zM5q9CA==
+"@longlost/app-lists@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-3.0.0.tgz#5697049f1b79c9aaf9001223d47eabdf9859f70d"
+  integrity sha512-tq41T17gpDM2MSRcbQmI8Y7FJit02EuskjXV/psYgpb/f0IPYNCp9uUpD5hQrbvRVFENZbIiXGST2RB1kfRZkg==
   dependencies:
-    "@longlost/app-core" "^9.0.1"
-    "@polymer/polymer" "^3.5.0"
+    "@longlost/app-core" "^9.0.4"
+    "@polymer/polymer" "^3.5.1"
 
 "@polymer/font-roboto@^3.0.1":
   version "3.0.2"
@@ -562,6 +577,13 @@
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/@polymer/polymer/-/polymer-3.5.0.tgz#e2f35c9e8a03137de38c7fb608498b05c004f3c6"
   integrity sha512-0OyN+LQ68tudbWYm7BeU4WELiqXvRn1HIpSnW0u7iFTdxJakJGLehh7PFgKL1noe9a0HHSKznQIfz+hMxzgBtA==
+  dependencies:
+    "@webcomponents/shadycss" "^1.9.1"
+
+"@polymer/polymer@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@polymer/polymer/-/polymer-3.5.1.tgz#4b5234e43b8876441022bcb91313ab3c4a29f0c8"
+  integrity sha512-JlAHuy+1qIC6hL1ojEUfIVD58fzTpJAoCxFwV5yr0mYTXV1H8bz5zy0+rC963Cgr9iNXQ4T9ncSjC2fkF9BQfw==
   dependencies:
     "@webcomponents/shadycss" "^1.9.1"
 

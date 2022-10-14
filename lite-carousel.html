@@ -1,4 +1,16 @@
 
+<!-- 
+
+  IMPORTANT: 
+
+    Every slotted item MUST have a preset width.
+
+    This is due to the inner workings of 'lite-list',
+    which requires all slotted items to have identical dimensions.
+
+-->
+  
+
 <style include="app-shared-styles carousel-shared-styles">
 
   :host {
@@ -9,10 +21,6 @@
     */
     --snap-item-height: 0px;
     --snap-item-width:  0px;
-  }
-
-  recycled-list {
-    --list-item-width: var(--carousel-item-width);
   }
 
   /* Scroll-snap re-snapping workaround. */
@@ -59,7 +67,7 @@
 <div class$="aspect-wrapper landscape [[aspect]]">
   
   <!-- Don't allow selection for a more app feel with class="shared-no-select". -->
-  <!-- <recycled-list id="scrollContainer"
+  <!-- <lite-list id="scrollContainer"
                  class="shared-no-select"
                  infinite="[[infinite]]"
                  items="[[items]]"
@@ -67,8 +75,8 @@
                  w-margin="[[margin]]"
                  on-mousedown="__containerOnDown"
                  on-mouseup="__containerOnUp"
-                 on-recycled-list-current-items-changed="__recycledListCurrentItemsHandler"
-                 on-recycled-list-pagination-changed="__recycledListPaginationHandler"
+                 on-lite-list-current-items-changed="__recycledListCurrentItemsHandler"
+                 on-lite-list-pagination-changed="__recycledListPaginationHandler"
                  on-touchend="__containerOnUp"
                  on-touchstart="__containerOnDown"
                  on-wheel="__containerOnWheel">
@@ -83,14 +91,14 @@
       
     </template>
 
-  </recycled-list> -->
+  </lite-list> -->
 
 
   <!-- 
 
   Temporary workaround for browsers with automatic scroll re-snapping!!
 
-  Recycled list transforms its reusable container elements on the fly
+  Lite-list transforms its reusable container elements on the fly
   to give the appearance of a large scrollable list.
 
   Glitches and bugs arrise from the browser automatically 
@@ -98,18 +106,18 @@
 
   The browser does this so that snapped elements are correctly placed after 
   a screen rotation or resize, which is a win vs other browsers, but 
-  unfortunately breaks `recycled-list`. 
+  unfortunately breaks 'lite-list'. 
 
   See https://web.dev/snap-after-layout/ for more details.
 
   So the workaround involves creating a set of empty divs that are 
   placed behind the list items. These static divs are given the 
-  scroll-snap-align property so the browser doesnot have to recalculate 
+  scroll-snap-align property so the browser does not have to recalculate 
   scroll snapping.
 
   The downside is that the snap item list grows as the user scrolls, 
-  which sort of defeates the purpose of `recycled-list`, but since it is
-  comprised of simple divs, the hope is that this is an acceptable compromise,
+  which defeates the purpose of 'lite-list', but since it is
+  comprised of empty divs, the hope is that this is an acceptable compromise,
   from a performance perspective.
 
   According to the 'snap-after-layout' blog, future versions of browsers will
@@ -119,20 +127,20 @@
   Use the commented version above when this has been resolved. 
 
   -->
-  <recycled-list id="scrollContainer"
-                 class="shared-no-select"
-                 infinite="[[infinite]]"
-                 items="[[items]]"
-                 layout="horizontal"
-                 w-margin="[[margin]]"
-                 on-mousedown="__containerOnDown"
-                 on-mouseup="__containerOnUp"
-                 on-recycled-list-current-items-changed="__recycledListCurrentItemsHandler"
-                 on-recycled-list-pagination-changed="__recycledListPaginationHandler"
-                 on-recycled-list-sample-bbox-changed="__recycledListSampleBboxHandler"
-                 on-touchend="__containerOnUp"
-                 on-touchstart="__containerOnDown"
-                 on-wheel="__containerOnWheel">
+  <lite-list id="scrollContainer"
+             class="shared-no-select"
+             infinite="[[infinite]]"
+             items="[[items]]"
+             layout="horizontal"
+             margin="[[margin]]"
+             on-mousedown="__containerOnDown"
+             on-mouseup="__containerOnUp"
+             on-lite-list-current-items-changed="__recycledListCurrentItemsHandler"
+             on-lite-list-pagination-changed="__recycledListPaginationHandler"
+             on-lite-list-sample-bbox-changed="__recycledListSampleBboxHandler"
+             on-touchend="__containerOnUp"
+             on-touchstart="__containerOnDown"
+             on-wheel="__containerOnWheel">
 
     <div id="snap-items" 
          slot="scroll-snap-workaround">
@@ -156,7 +164,7 @@
       
     </template>
 
-  </recycled-list>
+  </lite-list>
 
 </div>
 
