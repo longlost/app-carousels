@@ -146,6 +146,7 @@
 
 import {AppElement}              from '@longlost/app-core/app-element.js';
 import {CarouselMixin}           from './carousel-mixin.js';
+import {clamp}                   from '@longlost/app-core/lambda.js'; 
 import {hijackEvent, listenOnce} from '@longlost/app-core/utils.js';
 import template                  from './lite-carousel.html';
 import '@longlost/app-core/app-shared-styles.css';
@@ -198,7 +199,7 @@ class LiteCarousel extends CarouselMixin(AppElement) {
       // This number is clamped at a minimum of 1.5.
       margin: {
         type: Number,
-        value: 7
+        value: 8
       },
 
       _carouselName: {
@@ -214,6 +215,9 @@ class LiteCarousel extends CarouselMixin(AppElement) {
         computed: '__computeSectionCount(items.length, _maxIntersecting, position)'
       },
 
+      // Cached for use by '__goToSection'.
+      _pagination: Object,
+
       // Drives slotted template repeater for `lite-list`.
       _slotItems: Array,
 
@@ -225,7 +229,13 @@ class LiteCarousel extends CarouselMixin(AppElement) {
 
       _sampleHeight: Number,
 
-      _sampleWidth: Number
+      _sampleWidth: Number,
+
+      _visibleCount: {
+        type: Number,
+        value: 1,
+        computed: '__computeVisibleCount(_pagination)'
+      }
 
     };
   }
@@ -233,45 +243,80 @@ class LiteCarousel extends CarouselMixin(AppElement) {
 
   static get observers() {
     return [
-      '__sampleWidthHeightChanged(_sampleWidth, _sampleHeight)'
+      '__sampleWidthHeightChanged(_sampleWidth, _sampleHeight)',
+      '__updateSnapItems(items.length)'
     ];
   }
 
 
-  // Forward a renamed event for public api.
-  __recycledListCurrentItemsHandler(event) {
+  __computeVisibleCount(pagination) {
 
-    hijackEvent(event);
+    if (!pagination) { return 1; }
+
+    const {itemBbox, parentBbox, per} = pagination;
+    const sections = Math.ceil(parentBbox.width / itemBbox.width);
+
+    return sections * per;
+  }
+
+  // Forward a renamed event for public api.
+  __listCurrentItemsHandler(event) {
+
+    // NOTE: Do not hijack event as it may be needed by the parent.
+    //       Either directly, or by way of 'db-list-mixin.js'.
 
     const {value: items} = event.detail;    
 
     // Sync the number of available repeated slots with
     // that of `lite-list`.
     if (this._slotItems?.length !== items.length) {
-      this._slotItems = items.map(item => undefined);
+
+      this._slotItems = items.map(_ => undefined);
     }
 
     this.fire(`${this._carouselName}-carousel-current-items-changed`, event.detail);
   }
 
+
+  __getSnapItems(count) {
+
+    const delta = this.items.length - this._snapItems.length;
+    const added = this.infinite ? count : Math.min(count, delta);
+
+    return Array(Math.max(0, added)).fill(undefined);
+  }
+
   // NOTE:
   //      This method is part of the browser scroll-snap
   //      re-snapping workaround.
-  __addSnapItems(end) {
+  __addSnapItems(count) {
 
-    const diff  = end - this._snapItems.length;
+    const snaps = this.__getSnapItems(count);
 
-    if (diff < 1) { return; }
+    this.push('_snapItems', ...snaps);
 
-    this.push('_snapItems', ...Array(diff).fill(undefined));
+    return Boolean(snaps.length); // Whether or not items were added.
   }
 
 
-  __recycledListPaginationHandler(event) {
+  __listPaginationHandler(event) {
 
-    hijackEvent(event);
+    // NOTE: Do not hijack event as it may be needed by the parent.
+    //       Either directly, or by way of 'db-list-mixin.js'.
 
-    this.__addSnapItems(event.detail.value.end);
+    const pagination     = event.detail.value;
+    const {count, index} = pagination;
+
+    this._pagination = pagination; // Cache for use by '__goToSection'.
+
+    // Add more snap elements ahead of schedule, before 
+    // the user hits the end scroll limit of the list.
+    const buffer = index + this._visibleCount;
+
+    // Redundant. Already added for this page.
+    if (this._snapItems.length && buffer <= this._snapItems.length - 1) { return; }
+
+    this.__addSnapItems(count);
 
     this.fire(`${this._carouselName}-carousel-pagination-changed`, event.detail);
   }
@@ -283,9 +328,10 @@ class LiteCarousel extends CarouselMixin(AppElement) {
   //      Must ensure that snap-scroll target elements are EXACTLY
   //      the same size as 'lite-list' containers, otherwise
   //      the snap points will become offset from the slotted children.
-  __recycledListSampleBboxHandler(event) {
+  __listItemBboxHandler(event) {
 
-    hijackEvent(event);
+    // NOTE: Do not hijack event as it may be needed by the parent.
+    //       Either directly, or by way of 'db-list-mixin.js'.
 
     const {height, width} = event.detail.value;
 
@@ -294,9 +340,12 @@ class LiteCarousel extends CarouselMixin(AppElement) {
   }
 
 
-  async __domChangeHandler() {
+  async __domChangeHandler(event) {
 
-    try {  
+    try { 
+
+      // NOTE: Cannot hijack this event! 
+      //       It is also used by '__goToSection'.
 
       await this.debounce('carousel-dom-change-debounce', 200);
 
@@ -318,6 +367,9 @@ class LiteCarousel extends CarouselMixin(AppElement) {
 
         this.push('_elements', ...newElements);
       }
+
+      // NOT intended be used outside of this element's definition.
+      this.fire('internal-elements-added', {}, {bubbles: false});
     }
     catch (error) {
       if (error === 'debounced') { return; }
@@ -343,7 +395,7 @@ class LiteCarousel extends CarouselMixin(AppElement) {
     this.updateStyles({
       '--snap-item-height': `${height}px`,
       '--snap-item-width':  `${width}px`
-    });
+    });   
   }
 
 
@@ -356,6 +408,24 @@ class LiteCarousel extends CarouselMixin(AppElement) {
     if (typeof index !== 'number') { return; }
 
     this.fire(`${this._carouselName}-carousel-section-index-changed`, {value: index}); 
+  }
+
+  // Keep snap element count synchronized with items count.
+  //
+  // Remove snap elements any time items shrinks
+  // to a size smaller than current amount of snap
+  // elements.
+  __updateSnapItems(length) {
+
+    const delta = this._snapItems.length - length;
+
+    if (delta > 0) {
+
+      const start = this._snapItems.length - delta;
+
+      // Delete from the very end of the array.
+      this.splice('_snapItems', start, delta);
+    }
   }
 
 
@@ -402,22 +472,30 @@ class LiteCarousel extends CarouselMixin(AppElement) {
 
     this.__interrupt();
 
+    const i = this.infinite ? 
+                Math.max(0, index) : // Allow upper bound overruns.
+                clamp(0, this.items.length, index); // Do not allow overruns.
+
     // Wait until new snap items are added before attempting to move.
-    const diff  = (index - 1) - (this._snapItems.length - this._slotItems.length);
+    const diff  = (i - 1) - (this._snapItems.length - this._slotItems.length);
 
     if (diff > 0) {
-      this.push('_snapItems', ...Array(diff).fill(undefined));
 
-      await listenOnce(this.$.snapRepeater, 'dom-change');
+      const count = Math.max(diff, this._pagination?.count);
+      const added = this.__addSnapItems(count);
+
+      if (added) {
+
+        await listenOnce(this, 'internal-elements-added');
+      }
+    } 
+
+    if (behavior === 'smooth') {
+
+      return this.select('lite-list').animateToIndex(i, this.position);
     }
 
-    const {target} = this._sections[index];
-
-    target.scrollIntoView({
-      behavior,
-      block:  'nearest',
-      inline: this.position
-    });
+    return this.select('lite-list').moveToIndex(i, this.position);
   }
 
 }
