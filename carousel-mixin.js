@@ -155,9 +155,6 @@ export const CarouselMixin = superClass => {
         // Fired in 'recycled-carousel-section-index-changed' event.
         // Section items can differ from slotted items
         // since a section can contain multiple items.
-        // Use this prop in conjunction with 'moveToSection'
-        // and/or 'animateToSection' public api, to control
-        // the carousel.
         _sectionIndex: {
           type: Number,
           computed: '__computeSectionIndex(_sections, _intersectingEntries, position)',
@@ -166,9 +163,6 @@ export const CarouselMixin = superClass => {
 
         // Section items can differ from slotted items
         // since a section can contain multiple items.
-        // Use this prop in conjunction with 'moveToSection'
-        // and/or 'animateToSection' public api, to control
-        // the carousel.      
         _sections: {
           type: Array,
           computed: '__computeSections(_entries.*, _sectionCount, position)'
@@ -456,24 +450,18 @@ export const CarouselMixin = superClass => {
         threshold:   this._intersectionThreshold
       };
 
-      // Reduce the memory footprint since '_entries'
-      // grows as the user scrolls.
-      const stripUnnecessaryFields = entry => ({
-        intersectionRatio: entry.intersectionRatio,
-        target:            entry.target
-      });
-
       const callback = entries => {
 
         entries.forEach(entry => {
-          const {carouselIndex} = entry.target;
-          const prevData        = this._entries[carouselIndex];
-          const currData        = stripUnnecessaryFields(entry);
+
+          const {intersectionRatio, target} = entry;
+          const {carouselIndex}             = target;
+          const prevData                    = this._entries[carouselIndex];
 
           // Keep carouselIndex from '__elementsChanged'.
           this.set(
             `_entries.${carouselIndex}`, 
-            {...prevData, ...currData}
+            {...prevData, intersectionRatio, target}
           );
         });
       };
@@ -722,13 +710,13 @@ export const CarouselMixin = superClass => {
 
     animateToSection(index) {
 
-      this.__goToSection(index);
+      return this.__goToSection(index);
     }
 
 
     moveToSection(index) {
 
-      this.__goToSection(index, 'auto');
+      return this.__goToSection(index, 'auto');
     }
 
 
