@@ -814,10 +814,10 @@
     "@polymer/iron-image" "^3.0.2"
     "@polymer/paper-button" "^3.0.1"
 
-"@longlost/app-lists@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-3.3.0.tgz#9293a2e91fca95d956af69669578eaaa62b56597"
-  integrity sha512-HkFmG00F307ccRwami/1OeeurbBXuySVr14Pmh3v+qC//Whtadi6JNaCxY3vYH/Hn+KHXoule83inWuED3lyUg==
+"@longlost/app-lists@^3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-3.4.0.tgz#83b088b8cdb3fa18ea50251f10bf39f76b7d9bc8"
+  integrity sha512-vXSk4FRgC8dujx9vAMwZGrfXfhXBPPpsjgx1IHmJ2sngPjE4FG0iUvg70dXxKoVX2J34/uy+nrrqRxYhrSEYhg==
   dependencies:
     "@longlost/app-core" "^9.0.5"
     "@polymer/polymer" "^3.5.1"
