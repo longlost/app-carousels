@@ -144,11 +144,17 @@
   **/
   
 
-import {AppElement}              from '@longlost/app-core/app-element.js';
-import {CarouselMixin}           from './carousel-mixin.js';
-import {clamp}                   from '@longlost/app-core/lambda.js'; 
-import {hijackEvent, listenOnce} from '@longlost/app-core/utils.js';
-import template                  from './lite-carousel.html';
+import {AppElement}    from '@longlost/app-core/app-element.js';
+import {CarouselMixin} from './carousel-mixin.js';
+import {clamp}         from '@longlost/app-core/lambda.js'; 
+
+import {
+  hijackEvent, 
+  listenOnce, 
+  schedule
+} from '@longlost/app-core/utils.js';
+
+import template from './lite-carousel.html';
 import '@longlost/app-core/app-shared-styles.css';
 import '@longlost/app-lists/lite-list.js';
 import './carousel-shared-styles.css';
@@ -159,9 +165,7 @@ class LiteCarousel extends CarouselMixin(AppElement) {
 
   static get is() { return 'lite-carousel'; }
 
-  static get template() {
-    return template;
-  }
+  static get template() { return template; }
 
 
   static get properties() {
@@ -263,9 +267,9 @@ class LiteCarousel extends CarouselMixin(AppElement) {
   __listCurrentItemsHandler(event) {
 
     // NOTE: Do not hijack event as it may be needed by the parent.
-    //       Either directly, or by way of 'db-list-mixin.js'.
+    //       ie. '@longlost/app-lists/db-list-mixin.js'.
 
-    const {value: items} = event.detail;    
+    const {value: items} = event.detail;   
 
     // Sync the number of available repeated slots with
     // that of `lite-list`.
@@ -289,9 +293,13 @@ class LiteCarousel extends CarouselMixin(AppElement) {
   // NOTE:
   //      This method is part of the browser scroll-snap
   //      re-snapping workaround.
-  __addSnapItems(count) {
+  async __addSnapItems(count) {
 
     const snaps = this.__getSnapItems(count);
+
+    if (snaps.length === 0) { return; }
+
+    await schedule(); // Smooths jank from maipulating dom while scrolling.
 
     this.push('_snapItems', ...snaps);
 
@@ -299,7 +307,7 @@ class LiteCarousel extends CarouselMixin(AppElement) {
   }
 
 
-  __listPaginationHandler(event) {
+  async __listPaginationHandler(event) {
 
     // NOTE: Do not hijack event as it may be needed by the parent.
     //       Either directly, or by way of 'db-list-mixin.js'.
@@ -316,9 +324,9 @@ class LiteCarousel extends CarouselMixin(AppElement) {
     // Redundant. Already added for this page.
     if (this._snapItems.length && buffer <= this._snapItems.length - 1) { return; }
 
-    this.__addSnapItems(count);
+    await this.__addSnapItems(count);
 
-    this.fire(`${this._carouselName}-carousel-pagination-changed`, event.detail);
+    this.fire(`${this._carouselName}-carousel-pagination-changed`, {value: pagination});
   }
 
   // NOTE:
@@ -351,7 +359,10 @@ class LiteCarousel extends CarouselMixin(AppElement) {
 
       // Initial batch of observed elements.
       if (!this._elements) {
-        this._elements = this.selectAll('.snap-item');
+
+        const elements = this.selectAll('.snap-item');
+
+        this.set('_elements', elements);
       }
 
       // Add new items to observer as they are created, versus 
@@ -477,18 +488,18 @@ class LiteCarousel extends CarouselMixin(AppElement) {
                 clamp(0, this.items.length, index); // Do not allow overruns.
 
     // Wait until new snap items are added before attempting to move.
-    const diff  = (i - 1) - (this._snapItems.length - this._slotItems.length);
+    const diff = (i - 1) - (this._snapItems.length - this._slotItems.length);
 
     if (diff > 0) {
 
       const count = Math.max(diff, this._pagination?.count);
-      const added = this.__addSnapItems(count);
+      const added = await this.__addSnapItems(count);
 
       if (added) {
 
         await listenOnce(this, 'internal-elements-added');
       }
-    } 
+    }
 
     if (behavior === 'smooth') {
 
