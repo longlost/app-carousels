@@ -3,6 +3,7 @@
   display:        block;
   position:       relative;
   width:          100%;
+  overflow:       hidden;
   pointer-events: none;
 
   --carousel-dot-size:            8px;

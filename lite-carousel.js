@@ -149,6 +149,7 @@ import {CarouselMixin} from './carousel-mixin.js';
 import {clamp}         from '@longlost/app-core/lambda.js'; 
 
 import {
+  getBBox,
   hijackEvent, 
   listenOnce, 
   schedule
@@ -281,6 +282,51 @@ class LiteCarousel extends CarouselMixin(AppElement) {
     this.fire(`${this._carouselName}-carousel-current-items-changed`, event.detail);
   }
 
+  // Setting the scroller's width in such a way as to match
+  // 'carousel-mixin' IntersectionObserver with 'lite-list' 
+  // internal IntersectionObserver trigger timing to avoid 
+  // jank.
+  __syncContainerWidthToIntersectionObserver(width) {
+
+    const containerWidth     = getBBox(this.scrollContainer).width;
+    const containerIsSmaller = containerWidth < width;
+
+    if (containerIsSmaller) {
+
+      // 'scrollContainer' is set in 'carousel-mixin.js'.
+      this.scrollContainer.style['width'] = `${width}px`;
+    }
+    else {
+
+      // Use the closest whole item as the threshold.
+      const visibleItems = Math.ceil(containerWidth / width);
+      const newWidth     = width * visibleItems;
+
+      // 'scrollContainer' is set in 'carousel-mixin.js'.
+      this.scrollContainer.style['width'] = `${newWidth}px`;
+    }
+  }
+
+  // NOTE:
+  //      This method is part of the browser scroll-snap
+  //      re-snapping workaround.
+  //
+  //      Must ensure that snap-scroll target elements are EXACTLY
+  //      the same size as 'lite-list' containers, otherwise
+  //      the snap points will become offset from the slotted children.
+  __listItemBboxHandler(event) {
+
+    // NOTE: Do not hijack event as it may be needed by the parent.
+    //       Either directly, or by way of 'db-list-mixin.js'.
+
+    const {height, width} = event.detail.value;
+
+    this._sampleHeight = height;
+    this._sampleWidth  = width;
+
+    this.__syncContainerWidthToIntersectionObserver(width);
+  }
+
 
   __getSnapItems(count) {
 
@@ -329,24 +375,6 @@ class LiteCarousel extends CarouselMixin(AppElement) {
     this.fire(`${this._carouselName}-carousel-pagination-changed`, {value: pagination});
   }
 
-  // NOTE:
-  //      This method is part of the browser scroll-snap
-  //      re-snapping workaround.
-  //
-  //      Must ensure that snap-scroll target elements are EXACTLY
-  //      the same size as 'lite-list' containers, otherwise
-  //      the snap points will become offset from the slotted children.
-  __listItemBboxHandler(event) {
-
-    // NOTE: Do not hijack event as it may be needed by the parent.
-    //       Either directly, or by way of 'db-list-mixin.js'.
-
-    const {height, width} = event.detail.value;
-
-    this._sampleHeight = height;
-    this._sampleWidth  = width;
-  }
-
 
   async __domChangeHandler(event) {
 
@@ -368,6 +396,9 @@ class LiteCarousel extends CarouselMixin(AppElement) {
       // Add new items to observer as they are created, versus 
       // iterating over the entire, growing set of elements.
       else {
+
+        if (!this._intersectionObserver) { return; }
+
         const newElements = this.selectAll('.snap-item:not(.observed)');
 
         if (!newElements.length) { return; }
@@ -392,16 +423,6 @@ class LiteCarousel extends CarouselMixin(AppElement) {
   __sampleWidthHeightChanged(width, height) {
 
     if (!width || !height) { return; }
-
-    const hostBbox = this.getBoundingClientRect();
-
-    // Must adjust the threshold if the child is wider than the host el.
-    if (width > hostBbox.width) {
-      this._intersectionThreshold = (hostBbox.width / width) - 0.01;
-    }
-    else {
-      this._intersectionThreshold = 0.99;
-    }
 
     this.updateStyles({
       '--snap-item-height': `${height}px`,
@@ -450,8 +471,10 @@ class LiteCarousel extends CarouselMixin(AppElement) {
     // an 'infinite' list of carousel elements.
     const iterations = Math.floor(this._sectionIndex / this._initialSectionCount);
 
-    if (iterations === 0) {        
-      this.animateToSection(selected);        
+    if (iterations === 0) {
+
+      this.animateToSection(selected); 
+             
       return;
     }
 
