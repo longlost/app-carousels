@@ -421,20 +421,20 @@
     mime-types "^2.1.35"
     workbox-window "^6.5.4"
 
-"@longlost/app-images@^2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@longlost/app-images/-/app-images-2.3.0.tgz#6d8caaf8759155109f9bf3fdcef176c63d2269aa"
-  integrity sha512-UoSZR0VHwhjZi9ZtADvL+uuk00kNKaiwGf1LfJgXgWOcPw+81AWBrRbZdWrsn3E4LW/jWj+jLRFs1QIML1WQHw==
+"@longlost/app-images@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@longlost/app-images/-/app-images-2.3.1.tgz#09768f2b37de8ce1d155b7423ad23b938692b51f"
+  integrity sha512-qKFISmMZ78ueX8envV1rxvr0uEIVj3gGlA/WKfj/X046Tf2w6cpeuvbtYcqW2qOngdeLnWqy/MBawIsbe/w3HA==
   dependencies:
     "@longlost/app-core" "^9.0.5"
     "@polymer/iron-icon" "^3.0.1"
     "@polymer/iron-iconset-svg" "^3.0.1"
     "@polymer/paper-button" "^3.0.1"
 
-"@longlost/app-lists@^3.4.1":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-3.4.1.tgz#74dfd8730786cf95787bca6c19338276f916ef42"
-  integrity sha512-Y2qds6LPunBq4GqraMtjQF7bhlbh9DLtcFSwQ1o2OiDuY53xvkpwZEa5l4s7DEgEObh3zIbrUkOvAzxhW0Yr7A==
+"@longlost/app-lists@^3.4.3":
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-3.4.3.tgz#201435845e5a14fed40fd9e66b8b5f3268bff450"
+  integrity sha512-pD/2/m9safYZw3ncroljQYA6bOqiyKuHur6dZZwrNgAVvTzMqvHEF/eoVOhuA7en5UMRgBoCYDxUdnlIJ6YqJA==
   dependencies:
     "@longlost/app-core" "^9.0.5"
     "@polymer/polymer" "^3.5.1"
