@@ -294,16 +294,37 @@ class LiteCarousel extends CarouselMixin(AppElement) {
     if (containerIsSmaller) {
 
       // 'scrollContainer' is set in 'carousel-mixin.js'.
-      this.scrollContainer.style['width'] = `${width}px`;
+      this.scrollContainer.style['width']     = `${width}px`;
+      this.scrollContainer.style['min-width'] = `${width}px`;
+      this.scrollContainer.style['max-width'] = `${width}px`;
     }
     else {
 
-      // Use the closest whole item as the threshold.
-      const visibleItems = Math.ceil(containerWidth / width);
-      const newWidth     = width * visibleItems;
+      // Size the scroller to be as wide as the rightmost
+      // side of the last visible item.
+      //
+      // Extra attention must be paid to how the browser
+      // handles fractional pixels.
+      //
+      // This means that if the last visible item has 1 or
+      // less than just 1 pixel visible, it is NOT 
+      // considered to be truely visible.
+      //
+      // This minor detail is especially important for use
+      // cases where position center is used.
+      const widthInt        = Math.floor(width);
+      const count           = containerWidth / widthInt;
+      const fullyVisible    = Math.floor(count);
+      const remainder       = count - fullyVisible;
+      const visibleWidth    = widthInt * remainder;
+      const withinTolerance = visibleWidth <= 1; // Tolerance of 1px.
+      const visibleItems    = withinTolerance ? Math.floor(count) : Math.ceil(count);
+      const newWidth        = Math.round(width * visibleItems);
 
       // 'scrollContainer' is set in 'carousel-mixin.js'.
-      this.scrollContainer.style['width'] = `${newWidth}px`;
+      this.scrollContainer.style['width']     = `${newWidth}px`;
+      this.scrollContainer.style['min-width'] = `${newWidth}px`;
+      this.scrollContainer.style['max-width'] = `${newWidth}px`;
     }
   }
 
@@ -351,7 +372,7 @@ class LiteCarousel extends CarouselMixin(AppElement) {
 
     return Boolean(snaps.length); // Whether or not items were added.
   }
-
+  
 
   async __listPaginationHandler(event) {
 
