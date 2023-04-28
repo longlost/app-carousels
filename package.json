@@ -22,7 +22,7 @@
   "dependencies": {
     "@longlost/app-core": "^9.0.5",
     "@longlost/app-images": "^2.3.1",
-    "@longlost/app-lists": "^3.4.3",
+    "@longlost/app-lists": "^3.4.4",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
     "@polymer/paper-icon-button": "^3.0.2",

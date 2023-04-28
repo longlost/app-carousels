@@ -37,6 +37,8 @@ import {
 } from '@longlost/app-core/utils.js';
 
 
+const isElement = obj => obj instanceof HTMLElement;
+
 const isOdd = num => num % 2 === 1;
 
 // Center is element's x coordinate plus half its width.
@@ -123,7 +125,10 @@ export const CarouselMixin = superClass => {
         // Cached #scrollContainer element if using the default slot,
         // or the custom scroller when using the 'scroller' slot.
         // Used to dynamically measure bbox for calculations.
-        scrollContainer: Object,
+        scrollContainer: {
+          type: Object,
+          observer: '__scrollContainerChanged'
+        },
 
         // Same as IntersectionObserver Api's 'threshold' option
         // with the exception that array values here are prohibited.
@@ -137,7 +142,7 @@ export const CarouselMixin = superClass => {
         // Fired in 'carousel-centered-changed' event.
         _centeredEntry: {
           type: Object,
-          computed: '__computeCenteredEntry(_intersectingEntries, scrollContainer)'
+          computed: '__computeCenteredEntry(_scrolling, _intersectingEntries, scrollContainer)'
         },
 
         // The scroll snap target elements contained in the carousel.
@@ -145,6 +150,10 @@ export const CarouselMixin = superClass => {
           type: Array,
           observer: '__elementsChanged'
         },
+
+        // IntersectionObserver observed items.
+        // Keyed by item index.
+        _entries: Object,
 
         // Cached, reused instance of IntersectionObserver.
         _intersectionObserver: Object,
@@ -174,10 +183,6 @@ export const CarouselMixin = superClass => {
         // after screen resizes.
         _oldSectionIndex: Number,
 
-        // IntersectionObserver observed items.
-        // Keyed by item index.
-        _entries: Object,
-
         // Used for window 'resize' events.
         // An observer watches this index number
         // as well as the _sections prop to ensure
@@ -187,6 +192,11 @@ export const CarouselMixin = superClass => {
 
         // ResizeObserver instance.
         _resizeObserver: Object,
+
+        // Delay centered item measurements until scrolling settles.
+        // True during scroll.
+        // This greatly improves accuracy of centered item calculations.
+        _scrolling: Boolean,
 
         // Section count is smaller than item count if 
         // displaying more multiple items at a time.
@@ -234,6 +244,14 @@ export const CarouselMixin = superClass => {
     }
 
 
+    constructor() {
+
+      super();
+
+      this.__scrollHandler = this.__scrollHandler.bind(this);
+    }
+
+
     connectedCallback() {
 
       super.connectedCallback();
@@ -255,6 +273,13 @@ export const CarouselMixin = superClass => {
 
       super.disconnectedCallback();
 
+
+      if (isElement(this.scrollContainer)) {
+
+        this.scrollContainer.removeEventListener('scroll', this.__scrollHandler);
+        this.scrollContainer.removeEventListener('lite-list-scroll-changed', this.__scrollHandler);
+      }
+
       this._resizeObserver?.disconnect();
       this._resizeObserver = undefined;
 
@@ -263,7 +288,9 @@ export const CarouselMixin = superClass => {
 
     // Not used internally. Only for consumer.
     // Fired in 'carousel-centered-changed' event.
-    __computeCenteredEntry(intersecting, container) {
+    __computeCenteredEntry(scrolling, intersecting, container) {
+
+      if (scrolling) { return; } // Take measurements AFTER scroll settles.
 
       if (!intersecting || !container) { return; }
 
@@ -273,6 +300,7 @@ export const CarouselMixin = superClass => {
       // Use real measurements instead of relying on the entry carouselIndex
       // for cases where elements have been rearranged but not reordered.
       const distances = intersecting.map(entry => {
+
         const {target} = entry;
 
         // Cannot rely on bbox measurements that come with each
@@ -296,7 +324,7 @@ export const CarouselMixin = superClass => {
         }
 
         // Closest element to center of container.
-        if (distance >= curr.distance) {
+        if (curr.distance < distance) {
           return curr;
         }
 
@@ -523,6 +551,22 @@ export const CarouselMixin = superClass => {
     }
 
 
+    __scrollContainerChanged(newVal, oldVal) {
+
+      if (isElement(oldVal)) {
+
+        oldVal.removeEventListener('scroll', this.__scrollHandler);
+        oldVal.removeEventListener('lite-list-scroll-changed', this.__scrollHandler);
+      }
+
+      if (isElement(newVal)) {
+
+        newVal.addEventListener('scroll', this.__scrollHandler);
+        newVal.addEventListener('lite-list-scroll-changed', this.__scrollHandler);
+      }
+    }
+
+
     __elementsIntersectionObserverChanged(elements, observer) {
 
       if (!Array.isArray(elements) || !observer) { return; }
@@ -613,9 +657,11 @@ export const CarouselMixin = superClass => {
       if (!scrollContainer) { return; }
 
       if (disabled) {
+
         this.scrollContainer.style['pointer-events'] = 'none';
       }
       else {
+
         this.scrollContainer.style['pointer-events'] = 'auto';
       }
     }
@@ -682,6 +728,7 @@ export const CarouselMixin = superClass => {
     __containerOnDown() {
 
       if (this._isPlaying) {
+
         this._shouldResume = true;
         this.__stop();
       }
@@ -692,6 +739,7 @@ export const CarouselMixin = superClass => {
     __containerOnUp() {
 
       if (this._shouldResume) {
+
         this._shouldResume = false;
         this.__play();
       }
@@ -724,14 +772,34 @@ export const CarouselMixin = superClass => {
       this.nextItem(event.detail.direction);
     }
 
+
+    async __scrollHandler() {
+
+      try {
+
+        this._scrolling = true;
+
+        await this.debounce('carousel-mixin-scroll-debouncer', 100);
+
+        this._scrolling = false;
+
+      }
+      catch (error) {
+        if (error === 'debounced') { return; }
+        console.error(error);
+      }
+    }
+
     // Sometimes the resize puts items in a state where none are
     // intersecting, so reset carousel to last known good index.
     __resizeHandler() {
 
       if (typeof this._sectionIndex === 'number') {
+
         this._resizeIndex = this._sectionIndex;
       }
       else if (typeof this._oldSectionIndex === 'number') {
+
         this._resizeIndex = this._oldSectionIndex;
       }
     }
@@ -742,6 +810,7 @@ export const CarouselMixin = superClass => {
       if (!elements || !this._intersectionObserver) { return; }
 
       elements.forEach(element => {
+
         this._intersectionObserver.unobserve(element);
       }); 
     }
@@ -772,9 +841,7 @@ export const CarouselMixin = superClass => {
     nextItem(direction = 'right', recycle = '') {
 
       // When user is scrolling/dragging items.
-      if (typeof this._sectionIndex !== 'number') {
-        return;
-      }
+      if (typeof this._sectionIndex !== 'number') { return; }
 
       if (direction === 'right') {
 
@@ -782,13 +849,18 @@ export const CarouselMixin = superClass => {
         if (this._sectionIndex + 1 >= this._sectionCount) {
 
           if (recycle === 'recycle') {
+
             this.animateToSection(0);
+
             return;
           }
         } 
         else { // Next section.
+
           const index = this._sectionIndex + 1;
+
           this.animateToSection(index);
+
           return;
         }
       } 
@@ -798,12 +870,16 @@ export const CarouselMixin = superClass => {
         if (this._sectionIndex - 1 < 0) {
 
           if (recycle === 'recycle') {
+
             this.animateToSection(this._sectionCount - 1);
+
             return;
           }
         } 
         else { // Next section.
+
           const index = this._sectionIndex - 1;
+
           this.animateToSection(index);
         }
       }
