@@ -138,11 +138,15 @@ export const CarouselMixin = superClass => {
           value: 1
         },
 
+        // The bounding client rect of the 'this' element.
+        // Used to calculate the centered item.
+        _bbox: Object,
+        
         // Currently centered item. Not used internally.
         // Fired in 'carousel-centered-changed' event.
         _centeredEntry: {
           type: Object,
-          computed: '__computeCenteredEntry(_scrolling, _intersectingEntries, scrollContainer)'
+          computed: '__computeCenteredEntry(_scrolling, _intersectingEntries, _bbox)'
         },
 
         // The scroll snap target elements contained in the carousel.
@@ -158,12 +162,12 @@ export const CarouselMixin = superClass => {
         // Cached, reused instance of IntersectionObserver.
         _intersectionObserver: Object,
 
-        // The items that are that are contained inside
+        // The items that are contained inside
         // parent at any given time according to 
         // IntersectionObserver Api.
         _intersectingEntries: {
           type: Array,
-          computed: '__computeIntersectingEntries(threshold, _entries.*)'
+          computed: '__computeIntersectingEntries(threshold, _entries)'
         },
 
         // Current playing state.
@@ -218,7 +222,7 @@ export const CarouselMixin = superClass => {
         // since a section can contain multiple items.
         _sections: {
           type: Array,
-          computed: '__computeSections(_entries.*, _sectionCount, position)'
+          computed: '__computeSections(_entries, _sectionCount, position)'
         },
 
         // Used by container on-up/on-down handlers.
@@ -288,14 +292,11 @@ export const CarouselMixin = superClass => {
 
     // Not used internally. Only for consumer.
     // Fired in 'carousel-centered-changed' event.
-    __computeCenteredEntry(scrolling, intersecting, container) {
+    __computeCenteredEntry(scrolling, intersecting, bbox) {
 
       if (scrolling) { return; } // Take measurements AFTER scroll settles.
 
-      if (!intersecting || !container) { return; }
-
-      // Dynamically measure scroll container to catch resizes.
-      const containerBBox = getBBox(container);
+      if (!intersecting || !bbox) { return; }
 
       // Use real measurements instead of relying on the entry carouselIndex
       // for cases where elements have been rearranged but not reordered.
@@ -308,7 +309,7 @@ export const CarouselMixin = superClass => {
         // for some time since the last entry became visible.
         // Must take fresh measurements and replace the existing data.
         const boundingClientRect = getBBox(target);
-        const containerCenter    = getCenter(containerBBox);
+        const containerCenter    = getCenter(bbox);
         const elementCenter      = getCenter(boundingClientRect); 
         const distance           = Math.abs(containerCenter - elementCenter);
 
@@ -323,7 +324,7 @@ export const CarouselMixin = superClass => {
           return curr;
         }
 
-        // Closest element to center of container.
+        // Closest element to center of the carousel.
         if (curr.distance < distance) {
           return curr;
         }
@@ -339,11 +340,9 @@ export const CarouselMixin = superClass => {
     //
     // IntersectionObserver entry.isIntersecting and entry.isVisible
     // do not report useful/accurate information for this use case.
-    __computeIntersectingEntries(threshold, polymerObj) {    
+    __computeIntersectingEntries(threshold, observed) {    
 
-      if (typeof threshold !== 'number' || !polymerObj?.base) { return; }
-
-      const {base: observed} = polymerObj;
+      if (typeof threshold !== 'number' || !observed) { return; }
 
       const intersecting = Object.values(observed).filter(isIntersecting);
 
@@ -351,19 +350,14 @@ export const CarouselMixin = superClass => {
     }
 
 
-    __computeSections(polymerObj, sectionCount, position) {
+    __computeSections(observed, sectionCount, position) {
 
-      // Noop if entries is undefined or if 
-      // sectionCount is undefined or less than 1.
       if (
-        !polymerObj                ||
-        !polymerObj.base           ||
+        !observed                  ||
         sectionCount === undefined || 
         sectionCount < 1           ||
         !position
       ) { return; }
-
-      const {base: observed} = polymerObj;
 
       // Create a map of values, sorted by index in ascending order.
       const entries = Object.
@@ -521,7 +515,7 @@ export const CarouselMixin = superClass => {
 
       const callback = entries => {
 
-        entries.forEach(objLike => {
+        const changes = entries.reduce((accum, objLike) => {
 
           // IntersectionObserverEntry is not iterable
           // and so cannot be spread.
@@ -529,13 +523,15 @@ export const CarouselMixin = superClass => {
           const {carouselIndex} = entry.target;
           const prevEntry       = this._entries[carouselIndex];
           
-          // Keep any added data, such as 'carouselIndex'
+          // Merge to keep any added data, such as 'carouselIndex'
           // from '__elementsChanged'.
-          this.set(
-            `_entries.${carouselIndex}`, 
-            {...prevEntry, ...entry}
-          );
-        });
+          accum[carouselIndex] = {...prevEntry, ...entry};
+
+          return accum;
+        }, {});
+
+        // Merge in the changes.
+        this._entries = {...this._entries, ...changes};
       };
 
       this._intersectionObserver = 
@@ -802,6 +798,8 @@ export const CarouselMixin = superClass => {
 
         this._resizeIndex = this._oldSectionIndex;
       }
+
+      this._bbox = getBBox(this);
     }
 
 

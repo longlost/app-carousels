@@ -288,7 +288,7 @@ class LiteCarousel extends CarouselMixin(AppElement) {
   // jank.
   __syncContainerWidthToIntersectionObserver(width) {
 
-    const containerWidth     = getBBox(this.scrollContainer).width;
+    const containerWidth     = getBBox(this).width;
     const containerIsSmaller = containerWidth < width;
 
     if (containerIsSmaller) {
@@ -312,11 +312,10 @@ class LiteCarousel extends CarouselMixin(AppElement) {
       //
       // This minor detail is especially important for use
       // cases where position center is used.
-      const widthInt        = Math.floor(width);
-      const count           = containerWidth / widthInt;
+      const count           = containerWidth / width;
       const fullyVisible    = Math.floor(count);
       const remainder       = count - fullyVisible;
-      const visibleWidth    = widthInt * remainder;
+      const visibleWidth    = width * remainder;
       const withinTolerance = visibleWidth <= 1; // Tolerance of 1px.
       const visibleItems    = withinTolerance ? Math.floor(count) : Math.ceil(count);
       const newWidth        = Math.round(width * visibleItems);

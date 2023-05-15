@@ -431,10 +431,10 @@
     "@polymer/iron-iconset-svg" "^3.0.1"
     "@polymer/paper-button" "^3.0.1"
 
-"@longlost/app-lists@^3.4.4":
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-3.4.4.tgz#1a09963ebceeddc406ae8daf375be248f476827b"
-  integrity sha512-rAzTGSgfHkyes137ChQpk9rKtbBo82kgwdzMg0u2G7L6hg4XRO+sMBMoNebyYx1pokrIOAarse0pGL4TRQ3Jxw==
+"@longlost/app-lists@^3.4.5":
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/@longlost/app-lists/-/app-lists-3.4.5.tgz#5486f192f43345928f7081e055746273ac2a305b"
+  integrity sha512-4HUGgCobYKDD/cee6n70Q00mnajjcKb+gYjTBx5qKcgMUylD+sdfbQO1if+ZnNZzMPEyMYYlkRgqXgqLzJ49Dg==
   dependencies:
     "@longlost/app-core" "^9.0.5"
     "@polymer/polymer" "^3.5.1"
